@@ -1,0 +1,13 @@
+.footer-section {
+    background-color: #1a1a1a;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.5);
+    border-radius: 0 0 10px 10px;
+  }
+  
+  .footer-text {
+    color: #cccccc;
+    font-size: 20px;
+    margin: 0;
+  }
