@@ -2,7 +2,7 @@ import { Outlet, Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./MovieView.css";
-import { useStoreContext } from "../Context";
+import { useStoreContext } from "../context";
 
 function MovieView() {
     const { selectedGenres } = useStoreContext();

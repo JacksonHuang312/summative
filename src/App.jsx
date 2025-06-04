@@ -1,5 +1,6 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { StoreProvider } from "./context";
 import HomeView from "./views/HomeView.jsx";
 import RegisterView from "./views/RegisterView.jsx";
 import LoginView from "./views/LoginView.jsx";

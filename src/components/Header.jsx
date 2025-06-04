@@ -1,6 +1,6 @@
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
-import { useStoreContext } from '../Context';
+import { useStoreContext } from '../context';
 
 function Header() {
   const navigate = useNavigate();
