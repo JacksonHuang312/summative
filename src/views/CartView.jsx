@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./CartView.css";
+import { useStoreContext } from "../context";
 
 function CartView() {
     const { cart, setCart } = useStoreContext();

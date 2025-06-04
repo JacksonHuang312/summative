@@ -3,8 +3,6 @@ import axios from "axios";
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useStoreContext } from "../context";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 
 function SearchView() {
     const [query, setQuery] = useState('');
@@ -62,9 +60,10 @@ function SearchView() {
             newCart.set(movie.id, movie);
             return newCart;
         });
-    };    return (
+    };    
+
+    return (
         <div className='search-view'>
-            <Header />
             <div className="main-content">
                 <div className="search-container">
                     <input 
@@ -143,7 +142,6 @@ function SearchView() {
                     </div>
                 )}
             </div>
-            <Footer />
         </div>
     );
 }
