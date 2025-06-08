@@ -1,10 +1,12 @@
 import './Header.css';
 import { useNavigate } from 'react-router-dom';
 import { useStoreContext } from '../context';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 
 function Header() {
   const navigate = useNavigate();
-  const { loggedIn, setLoggedIn, firstName } = useStoreContext();
+  const { user, setUser, setSelectedGenres, cart, setCart, authLoading, firstName } = useStoreContext();
 
   const handleLogin = () => {
     navigate('/login');
@@ -22,13 +24,28 @@ function Header() {
     navigate('/settings');
   };
 
-  const handleLogout = () => {
-    setLoggedIn(false);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      // Clear user data first
+      setUser(null);
+      setSelectedGenres([]);
+      setCart(new Map());
+      localStorage.removeItem(`${auth.currentUser?.uid}-cart`);
+      
+      // Then sign out
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const handleHome = () => {
-    navigate('/');
+    if (user) {
+      navigate('/movies');
+    } else {
+      navigate('/');
+    }
   };
 
   const handleSearch = () => {
@@ -38,30 +55,31 @@ function Header() {
   return (
     <header className="header">
       <h1 className="title" onClick={handleHome}>Fentstreams</h1>
-      
-      <div className="header-content">
-        {loggedIn && (
+        <div className="header-content">
+        {!authLoading && user && (
           <>
             <div className="welcome-message">
-              Hello {firstName}!
+              Hello {firstName || 'there'}!
             </div>
           </>
         )}
 
         <div className="buttons">
-          {!loggedIn ? (
+          {!authLoading && (user ? (
             <>
-              <button className="nav-button" onClick={handleLogin}>Login</button>
-              <button className="nav-button" onClick={handleRegister}>Register</button>
+              <button className="header-button" onClick={handleSearch}>Search</button>
+              <button className="header-button" onClick={handleCart}>
+                Cart {cart.size > 0 ? `(${cart.size})` : ''}
+              </button>
+              <button className="header-button" onClick={handleSettings}>Settings</button>
+              <button className="header-button" onClick={handleLogout}>Logout</button>
             </>
           ) : (
             <>
-              <button className="nav-button" onClick={handleSearch}>Search</button>
-              <button className="nav-button" onClick={handleCart}>Cart</button>
-              <button className="nav-button" onClick={handleSettings}>Settings</button>
-              <button className="nav-button" onClick={handleLogout}>Logout</button>
+              <button className="header-button" onClick={handleLogin}>Login</button>
+              <button className="header-button" onClick={handleRegister}>Register</button>
             </>
-          )}
+          ))}
         </div>
       </div>
     </header>

@@ -21,24 +21,26 @@ function GenreView() {
     const { genre_id } = useParams();
     const [movies, setMovies] = useState([]);
     const [page, setPage] = useState(1);
-    const { cart, setCart } = useStoreContext();
+    const { cart, updateCart, purchaseHistory } = useStoreContext();
     const selectedGenre = genres.find(genre => genre.id === parseInt(genre_id));
     const genreName = selectedGenre ? selectedGenre.genre : "Movies in Genre";
 
+    const isMoviePurchased = (movieId) => {
+        return purchaseHistory.some(purchase => 
+            Object.values(purchase.items).some(item => item.id === movieId)
+        );
+    };
+
     const handleAddToCart = (movie) => {
-        setCart(prevCart => {
-            const newCart = new Map(prevCart);
-            newCart.set(movie.id, movie);
-            return newCart;
-        });
+        if (isMoviePurchased(movie.id)) {
+            alert("You already own this movie!");
+            return;
+        }
+        updateCart(cart.set(movie.id, movie));
     };
 
     const handleRemoveFromCart = (movieId) => {
-        setCart(prevCart => {
-            const newCart = new Map(prevCart);
-            newCart.delete(movieId);
-            return newCart;
-        });
+        updateCart(cart.delete(movieId));
     };
 
     useEffect(() => {
@@ -60,44 +62,65 @@ function GenreView() {
             <h2>{genreName}</h2>
             <div className="genre-view-container">
                 {movies.length > 0 ? (
-                    movies.map((movie) => (
-                        <div key={movie.id} className="genre-view-item">
-                            <Link to={`/movies/details/${movie.id}`}>
-                                {movie.poster_path ? (
-                                    <img 
-                                        src={`https://image.tmdb.org/t/p/original${movie.poster_path}`} 
-                                        alt={movie.title} 
-                                        className="genre-view-image" 
-                                    />
+                    movies.map((movie) => {
+                        const isPurchased = isMoviePurchased(movie.id);
+                        return (
+                            <div key={movie.id} className="genre-view-item">
+                                <Link to={`/movies/details/${movie.id}`}>
+                                    {movie.poster_path ? (
+                                        <img 
+                                            src={`https://image.tmdb.org/t/p/original${movie.poster_path}`} 
+                                            alt={movie.title} 
+                                            className="genre-view-image" 
+                                        />
+                                    ) : (
+                                        <div className="no-image">No Image Available</div>
+                                    )}
+                                </Link>
+                                <h3 className="movie-title">{movie.title}</h3>
+                                {isPurchased ? (
+                                    <button 
+                                        className="cart-button purchased"
+                                        disabled
+                                    >
+                                        Owned
+                                    </button>
+                                ) : cart.has(movie.id) ? (
+                                    <button 
+                                        className="cart-button added"
+                                        onClick={() => handleRemoveFromCart(movie.id)}
+                                    >
+                                        Remove
+                                    </button>
                                 ) : (
-                                    <div className="no-image">No Image Available</div>
+                                    <button 
+                                        className="cart-button"
+                                        onClick={() => handleAddToCart(movie)}
+                                    >
+                                        Buy
+                                    </button>
                                 )}
-                            </Link>
-                            <h3 className="movie-title">{movie.title}</h3>
-                            {cart.has(movie.id) ? (
-                                <button 
-                                    className="cart-button added"
-                                    onClick={() => handleRemoveFromCart(movie.id)}
-                                >
-                                    Added
-                                </button>
-                            ) : (
-                                <button 
-                                    className="cart-button"
-                                    onClick={() => handleAddToCart(movie)}
-                                >
-                                    Buy
-                                </button>
-                            )}
-                        </div>
-                    ))
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No movies available for this genre.</p>
                 )}
             </div>
             <div className="genre-view-pagination-container">
-                <button className="genre-view-pagination-button" onClick={() => setPage((p) => Math.max(p - 1, 1))}> Prev </button>
-                <button className="genre-view-pagination-button" onClick={() => setPage((p) => p + 1)}> Next </button>
+                <button 
+                    className="genre-view-pagination-button" 
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    disabled={page === 1}
+                >
+                    Prev
+                </button>
+                <button 
+                    className="genre-view-pagination-button" 
+                    onClick={() => setPage((p) => p + 1)}
+                >
+                    Next
+                </button>
             </div>
         </div>
     );

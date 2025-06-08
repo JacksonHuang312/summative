@@ -116,13 +116,27 @@
     background-color: #cc0000;
 }
 
+.cart-button.purchased {
+    background-color: #2c2c2c;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    cursor: not-allowed;
+}
+
+.cart-button.purchased:hover {
+    background-color: #2c2c2c;
+}
+
 .cart-button.added {
     background-color: #1a1a1a;
     border: 2px solid #ff0000;
+    color: #ff0000;
 }
 
 .cart-button.added:hover {
     background-color: #2c2c2c;
+    color: white;
+    border-color: #cc0000;
 }
 
 @media (max-width: 1200px) {

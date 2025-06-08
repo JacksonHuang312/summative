@@ -2,8 +2,16 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /users/{userEmail} {
+      // Allow reading if the user is authenticated or if attempting to check if email exists
+      allow read: if true;
+      
+      // Allow writing if:
+      // 1. Creating a new user document (doesn't exist yet)
+      // 2. User is authenticated and updating their own document
+      allow write: if 
+        !exists(/databases/$(database)/documents/users/$(userEmail)) ||
+        (request.auth != null && request.auth.token.email == userEmail);
     }
     
     match /{document=**} {

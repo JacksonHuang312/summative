@@ -55,24 +55,26 @@
 }
 
 .settings-group input {
-    width: 100%;
+    width: calc(100% - 24px); /* Account for padding */
     padding: 12px;
     border: 2px solid #2c2c2c;
-    border-radius: 4px;
+    border-radius: 6px;
     background-color: #2c2c2c;
     color: white;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .settings-group input:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+    background-color: #1a1a1a;
 }
 
 .settings-group input:focus {
     outline: none;
-    border-color: #666666;
+    border-color: #ff0000;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
 }
 
 .genre-select {
@@ -123,18 +125,24 @@
 .settings-button {
     width: 100%;
     padding: 15px;
+    margin-top: 20px;
     border: none;
-    border-radius: 20px;
+    border-radius: 25px;
     background-color: #ff0000;
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .settings-button:hover {
     background-color: #cc0000;
+    transform: translateY(-2px);
+}
+
+.settings-button:active {
+    transform: translateY(0);
 }
 
 .error-message {
@@ -144,4 +152,139 @@
     border-radius: 4px;
     margin-bottom: 20px;
     text-align: center;
+}
+
+.message {
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border: 1px solid #00ff00;
+}
+
+.message.error {
+    background-color: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    border: 1px solid #ff0000;
+}
+
+.password-section {
+    background-color: #1a1a1a;
+    padding: 25px 0;
+    margin: 30px 0;
+}
+
+.password-section h3 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.password-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background-color: #ff0000;
+    border-radius: 2px;
+}
+
+.password-section .settings-group {
+    margin-bottom: 15px;
+}
+
+.password-section .settings-group label {
+    color: #cccccc;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.password-section .settings-group input {
+    width: calc(100% - 24px); /* Match the width calculation of other inputs */
+    padding: 12px;
+    border: 2px solid #2c2c2c;
+    border-radius: 6px;
+    background-color: #2c2c2c;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.password-section .settings-group input:focus {
+    outline: none;
+    border-color: #ff0000;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
+}
+
+.purchase-history {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #2c2c2c;
+}
+
+.purchase-history h3 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.purchase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.purchase-item {
+    background-color: #2c2c2c;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.purchase-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #3c3c3c;
+}
+
+.purchase-date {
+    color: #cccccc;
+}
+
+.purchase-total {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.purchase-movies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.purchased-movie {
+    background-color: #1a1a1a;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #cccccc;
+}
+
+.no-purchases {
+    color: #cccccc;
+    text-align: center;
+    font-style: italic;
 }

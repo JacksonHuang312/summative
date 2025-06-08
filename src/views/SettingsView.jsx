@@ -8,47 +8,55 @@ import './SettingsView.css';
 function Settings() {
     const navigate = useNavigate();
     const {
+        user,
+        authLoading,
         firstName,
         lastName,
-        email,
         selectedGenres,
-        setFirst,
-        setLast,
-        setSelected,
-        loggedIn
+        updateUserProfile,
+        purchaseHistory
     } = useStoreContext();
 
     const [newFirstName, setNewFirstName] = useState(firstName);
     const [newLastName, setNewLastName] = useState(lastName);
     const [selectedGenresList, setSelectedGenresList] = useState(selectedGenres);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState({ text: '', type: '' });
 
-    // Redirect if not logged in
+    // Update local state when context values change
     useEffect(() => {
-        if (!loggedIn) {
-            navigate('/login');
-        }
-    }, [loggedIn, navigate]);
+        setNewFirstName(firstName);
+        setNewLastName(lastName);
+        setSelectedGenresList(selectedGenres);
+    }, [firstName, lastName, selectedGenres]);
+
+    // Show loading state while checking auth
+    if (authLoading) {
+        return (
+            <div className="settings-view">
+                <Header />
+                <div className="settings-container">
+                    <div className="settings-box">
+                        <h2>Loading...</h2>
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    // Redirect if not authenticated
+    if (!user) {
+        navigate('/login');
+        return null;
+    }
 
     const genres = [
         "Sci-Fi", "Thriller", "Adventure", "Family", "Animation",
         "Action", "History", "Fantasy", "Horror", "Comedy"
     ];
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        // Validate at least 5 genres are selected
-        if (selectedGenresList.length < 5) {
-            alert("Please select at least 5 genres.");
-            return;
-        }
-
-        // Update user information
-        setFirst(newFirstName);
-        setLast(newLastName);
-        setSelected(selectedGenresList);
-        alert("Settings updated successfully!");
-    };
 
     const handleGenreToggle = (genre) => {
         setSelectedGenresList(prev => {
@@ -60,12 +68,68 @@ function Settings() {
         });
     };
 
+    const showMessage = (text, type = 'success') => {
+        setMessage({ text, type });
+        setTimeout(() => setMessage({ text: '', type: '' }), 5000);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validate at least 5 genres are selected
+        if (selectedGenresList.length < 5) {
+            showMessage("Please select at least 5 genres.", "error");
+            return;
+        }
+
+        // Validate password if changing
+        if (newPassword) {
+            if (newPassword !== confirmPassword) {
+                showMessage("New passwords don't match!", "error");
+                return;
+            }
+        }
+
+        // Prepare updates
+        const updates = {
+            genres: selectedGenresList
+        };
+
+        // Only include name and password updates for email users
+        const isEmailUser = user.providerData[0].providerId === 'password';
+        if (isEmailUser) {
+            updates.firstName = newFirstName;
+            updates.lastName = newLastName;
+            if (newPassword) {
+                updates.newPassword = newPassword;
+            }
+        }
+
+        // Update profile
+        const success = await updateUserProfile(updates);
+        if (success) {
+            showMessage("Settings updated successfully!");
+            setNewPassword('');
+            setConfirmPassword('');
+            setCurrentPassword('');
+        } else {
+            showMessage("Error updating settings. Please try again.", "error");
+        }
+    };
+
+    const isEmailUser = user.providerData[0].providerId === 'password';
+
     return (
         <div className="settings-view">
             <Header />
             <div className="settings-container">
                 <div className="settings-box">
                     <h2 className="settings-title">Account Settings</h2>
+                    {message.text && (
+                        <div className={`message ${message.type}`}>
+                            {message.text}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit}>
                         <div className="settings-group">
                             <label>First Name</label>
@@ -73,6 +137,7 @@ function Settings() {
                                 type="text"
                                 value={newFirstName}
                                 onChange={(e) => setNewFirstName(e.target.value)}
+                                disabled={!isEmailUser}
                                 required
                             />
                         </div>
@@ -82,6 +147,7 @@ function Settings() {
                                 type="text"
                                 value={newLastName}
                                 onChange={(e) => setNewLastName(e.target.value)}
+                                disabled={!isEmailUser}
                                 required
                             />
                         </div>
@@ -89,10 +155,41 @@ function Settings() {
                             <label>Email</label>
                             <input
                                 type="email"
-                                value={email}
+                                value={user.email}
                                 disabled
                             />
                         </div>
+                        
+                        {isEmailUser && (
+                            <div className="password-section">
+                                <h3>Change Password</h3>
+                                <div className="settings-group">
+                                    <label>Current Password</label>
+                                    <input
+                                        type="password"
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                    />
+                                </div>
+                                <div className="settings-group">
+                                    <label>New Password</label>
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                    />
+                                </div>
+                                <div className="settings-group">
+                                    <label>Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="genre-select">
                             <h3>Update Preferred Genres (Select at least 5)</h3>
                             {genres.map(genre => (
@@ -107,10 +204,40 @@ function Settings() {
                                 </div>
                             ))}
                         </div>
+
                         <button type="submit" className="settings-button">
                             Save Changes
                         </button>
                     </form>
+
+                    <div className="purchase-history">
+                        <h3>Purchase History</h3>
+                        {purchaseHistory.length > 0 ? (
+                            <div className="purchase-list">
+                                {purchaseHistory.map((purchase, index) => (
+                                    <div key={index} className="purchase-item">
+                                        <div className="purchase-header">
+                                            <span className="purchase-date">
+                                                {new Date(purchase.timestamp).toLocaleDateString()}
+                                            </span>
+                                            <span className="purchase-total">
+                                                {Object.keys(purchase.items).length} items
+                                            </span>
+                                        </div>
+                                        <div className="purchase-movies">
+                                            {Object.values(purchase.items).map(movie => (
+                                                <div key={movie.id} className="purchased-movie">
+                                                    {movie.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="no-purchases">No purchase history yet</p>
+                        )}
+                    </div>
                 </div>
             </div>
             <Footer />

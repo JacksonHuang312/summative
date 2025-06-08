@@ -11,6 +11,7 @@ import ErrorView from "./views/ErrorView.jsx";
 import SettingsView from "./views/SettingsView.jsx";
 import SearchView from "./views/SearchView.jsx";
 import CartView from './views/CartView.jsx';
+import ProtectedRoutes from "./utils/ProtectedRoutes.jsx";
 
 function App() {
   return (
@@ -20,13 +21,18 @@ function App() {
           <Route path="/" element={<HomeView />} />
           <Route path="/register" element={<RegisterView />} />
           <Route path="/login" element={<LoginView />} />
-          <Route path="/movies" element={<MovieView />}>
-            <Route path="genre/:genre_id" element={<GenreView />} />
-            <Route path="details/:id" element={<DetailView />} />
-            <Route path="search" element={<SearchView />} />
+          
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoutes />}>
+            <Route path="/movies" element={<MovieView />}>
+              <Route path="genre/:genre_id" element={<GenreView />} />
+              <Route path="details/:id" element={<DetailView />} />
+              <Route path="search" element={<SearchView />} />
+            </Route>
+            <Route path="/settings" element={<SettingsView />} />
+            <Route path="/cart" element={<CartView />} />
           </Route>
-          <Route path="/settings" element={<SettingsView />} />
-          <Route path="/cart" element={<CartView />} />
+          
           <Route path="*" element={<ErrorView />} />
         </Routes>
       </BrowserRouter>

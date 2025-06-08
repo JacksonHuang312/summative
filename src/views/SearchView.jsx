@@ -11,7 +11,7 @@ function SearchView() {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const { cart, setCart } = useStoreContext();
+    const { cart, updateCart, purchaseHistory } = useStoreContext();
 
     // Handle debouncing
     useEffect(() => {
@@ -28,6 +28,24 @@ function SearchView() {
     useEffect(() => {
         setPage(1);
     }, [debouncedQuery]);
+
+    const isMoviePurchased = (movieId) => {
+        return purchaseHistory.some(purchase => 
+            Object.values(purchase.items).some(item => item.id === movieId)
+        );
+    };
+
+    const handleAddToCart = (movie) => {
+        if (isMoviePurchased(movie.id)) {
+            alert("You already own this movie!");
+            return;
+        }
+        updateCart(cart.set(movie.id, movie));
+    };
+
+    const handleRemoveFromCart = (movieId) => {
+        updateCart(cart.delete(movieId));
+    };
 
     const fetchSearchResults = useCallback(async () => {
         if (!debouncedQuery.trim()) {
@@ -53,14 +71,6 @@ function SearchView() {
     useEffect(() => {
         fetchSearchResults();
     }, [fetchSearchResults]);
-
-    const handleAddToCart = (movie) => {
-        setCart(prevCart => {
-            const newCart = new Map(prevCart);
-            newCart.set(movie.id, movie);
-            return newCart;
-        });
-    };    
 
     return (
         <div className='search-view'>
@@ -88,7 +98,7 @@ function SearchView() {
                         <div className="search-results">
                             {movies.length > 0 ? (
                                 movies.map((movie) => {
-                                    const isInCart = cart.has(movie.id);
+                                    const isPurchased = isMoviePurchased(movie.id);
                                     return (
                                         <div key={movie.id} className="search-result-item">
                                             <div className="search-result-poster">
@@ -105,13 +115,28 @@ function SearchView() {
                                                 </Link>
                                             </div>
                                             <h3 className="movie-title">{movie.title}</h3>
-                                            <button 
-                                                className={`cart-button ${isInCart ? 'added' : ''}`}
-                                                onClick={() => handleAddToCart(movie)}
-                                                disabled={isInCart}
-                                            >
-                                                {isInCart ? 'Added' : 'Buy'}
-                                            </button>
+                                            {isPurchased ? (
+                                                <button 
+                                                    className="cart-button purchased"
+                                                    disabled
+                                                >
+                                                    Owned
+                                                </button>
+                                            ) : cart.has(movie.id) ? (
+                                                <button 
+                                                    className="cart-button added"
+                                                    onClick={() => handleRemoveFromCart(movie.id)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    className="cart-button"
+                                                    onClick={() => handleAddToCart(movie)}
+                                                >
+                                                    Buy
+                                                </button>
+                                            )}
                                         </div>
                                     );
                                 })
