@@ -55,7 +55,7 @@
 }
 
 .settings-group input {
-    width: calc(100% - 24px); /* Account for padding */
+    width: calc(100% - 24px);
     padding: 12px;
     border: 2px solid #2c2c2c;
     border-radius: 6px;
@@ -212,7 +212,7 @@
 }
 
 .password-section .settings-group input {
-    width: calc(100% - 24px); /* Match the width calculation of other inputs */
+    width: calc(100% - 24px);
     padding: 12px;
     border: 2px solid #2c2c2c;
     border-radius: 6px;

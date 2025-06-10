@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "./CartView.css";
@@ -6,23 +6,34 @@ import { useStoreContext } from "../context";
 import { Map } from 'immutable';
 
 function CartView() {
-    const { cart, updateCart, handleCheckout, purchaseHistory } = useStoreContext();
+    const { cart, updateCart, handleCheckout, purchaseHistory, user } = useStoreContext();
     const [checkoutMessage, setCheckoutMessage] = useState('');
     const [processing, setProcessing] = useState(false);
+    const [validatedCart, setValidatedCart] = useState(cart);
 
-    // Check if movie was already purchased
-    const isMoviePurchased = (movieId) => {
-        return purchaseHistory.some(purchase => 
-            Object.values(purchase.items).some(item => item.id === movieId)
-        );
-    };
+    useEffect(() => {
+        const newValidatedCart = cart.filter((value, key) => {
+            const movieId = parseInt(key);
+            return !purchaseHistory.some(purchase => 
+                Object.values(purchase.items).some(item => item.id === movieId)
+            );
+        });
+        
+        setValidatedCart(newValidatedCart);
+        if (!Map.isMap(newValidatedCart) || newValidatedCart.size !== cart.size) {
+            updateCart(newValidatedCart);
+        }
+    }, [cart, purchaseHistory]);
 
     const handleRemoveFromCart = (movieId) => {
-        updateCart(cart.delete(movieId));
+        if (!user) return;
+        
+        const newCart = validatedCart.delete(movieId.toString());
+        updateCart(newCart);
     };
 
     const processCheckout = async () => {
-        if (cart.size === 0) {
+        if (validatedCart.size === 0) {
             setCheckoutMessage("Your cart is empty!");
             return;
         }
@@ -37,11 +48,10 @@ function CartView() {
             setCheckoutMessage("There was an error processing your purchase. Please try again.");
         }
 
-        // Clear message after 5 seconds
         setTimeout(() => setCheckoutMessage(''), 5000);
     };
 
-    const cartItems = Array.from(cart.values());
+    const cartItems = Array.from(validatedCart.values());
 
     return (
         <div className="cart-view">

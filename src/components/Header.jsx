@@ -30,7 +30,11 @@ function Header() {
       setUser(null);
       setSelectedGenres([]);
       setCart(new Map());
-      localStorage.removeItem(`${auth.currentUser?.uid}-cart`);
+      
+      // Remove cart from localStorage with email-based key
+      if (auth.currentUser?.email) {
+        localStorage.removeItem(`cart-${auth.currentUser.email}`);
+      }
       
       // Then sign out
       await signOut(auth);

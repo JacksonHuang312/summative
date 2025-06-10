@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./GenreView.css";
 import { useStoreContext } from "../context";
+import { Map } from 'immutable';
 
 const genres = [
     { genre: "Sci-Fi", id: 878 },
@@ -21,7 +22,7 @@ function GenreView() {
     const { genre_id } = useParams();
     const [movies, setMovies] = useState([]);
     const [page, setPage] = useState(1);
-    const { cart, updateCart, purchaseHistory } = useStoreContext();
+    const { cart, updateCart, purchaseHistory, user } = useStoreContext();
     const selectedGenre = genres.find(genre => genre.id === parseInt(genre_id));
     const genreName = selectedGenre ? selectedGenre.genre : "Movies in Genre";
 
@@ -32,15 +33,22 @@ function GenreView() {
     };
 
     const handleAddToCart = (movie) => {
+        if (!user) return;
+        
         if (isMoviePurchased(movie.id)) {
             alert("You already own this movie!");
             return;
         }
-        updateCart(cart.set(movie.id, movie));
+
+        const newCart = cart.set(movie.id.toString(), movie);
+        updateCart(newCart);
     };
 
     const handleRemoveFromCart = (movieId) => {
-        updateCart(cart.delete(movieId));
+        if (!user) return;
+        
+        const newCart = cart.delete(movieId.toString());
+        updateCart(newCart);
     };
 
     useEffect(() => {
@@ -85,12 +93,12 @@ function GenreView() {
                                     >
                                         Owned
                                     </button>
-                                ) : cart.has(movie.id) ? (
+                                ) : cart.has(movie.id.toString()) ? (
                                     <button 
                                         className="cart-button added"
                                         onClick={() => handleRemoveFromCart(movie.id)}
                                     >
-                                        Remove
+                                        Added
                                     </button>
                                 ) : (
                                     <button 

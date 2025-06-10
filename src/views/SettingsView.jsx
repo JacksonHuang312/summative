@@ -25,14 +25,12 @@ function Settings() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
 
-    // Update local state when context values change
     useEffect(() => {
         setNewFirstName(firstName);
         setNewLastName(lastName);
         setSelectedGenresList(selectedGenres);
     }, [firstName, lastName, selectedGenres]);
 
-    // Show loading state while checking auth
     if (authLoading) {
         return (
             <div className="settings-view">
@@ -47,7 +45,6 @@ function Settings() {
         );
     }
 
-    // Redirect if not authenticated
     if (!user) {
         navigate('/login');
         return null;
@@ -76,36 +73,36 @@ function Settings() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate at least 5 genres are selected
         if (selectedGenresList.length < 5) {
             showMessage("Please select at least 5 genres.", "error");
             return;
         }
 
-        // Validate password if changing
         if (newPassword) {
+            if (!currentPassword) {
+                showMessage("Please enter your current password.", "error");
+                return;
+            }
             if (newPassword !== confirmPassword) {
                 showMessage("New passwords don't match!", "error");
                 return;
             }
         }
 
-        // Prepare updates
         const updates = {
             genres: selectedGenresList
         };
 
-        // Only include name and password updates for email users
         const isEmailUser = user.providerData[0].providerId === 'password';
         if (isEmailUser) {
             updates.firstName = newFirstName;
             updates.lastName = newLastName;
             if (newPassword) {
                 updates.newPassword = newPassword;
+                updates.currentPassword = currentPassword;
             }
         }
 
-        // Update profile
         const success = await updateUserProfile(updates);
         if (success) {
             showMessage("Settings updated successfully!");
