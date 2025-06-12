@@ -45,7 +45,6 @@ export const StoreProvider = ({ children }) => {
             const storedCart = localStorage.getItem(getCartKey(userEmail));
             if (storedCart) {
                 const parsedCart = JSON.parse(storedCart);
-                // Filter out any items that have been purchased
                 const filteredCart = {};
                 for (const [key, value] of Object.entries(parsedCart)) {
                     const movieId = parseInt(key);
@@ -76,7 +75,6 @@ export const StoreProvider = ({ children }) => {
     const updateCart = (newCart) => {
         if (!user) return;
         
-        // Validate that none of the items in the new cart have been purchased
         const validatedCart = newCart.filter((value, key) => {
             const movieId = parseInt(key);
             const isPurchased = purchaseHistory.some(purchase => 
@@ -140,28 +138,22 @@ export const StoreProvider = ({ children }) => {
         try {
             if (updates.newPassword && updates.currentPassword) {
                 try {
-                    // Create credentials with current password
                     const credential = EmailAuthProvider.credential(
                         user.email,
                         updates.currentPassword
                     );
-                    // Reauthenticate user using the imported function
                     await reauthenticateWithCredential(user, credential);
-                    // Update password
                     await updatePassword(user, updates.newPassword);
                 } catch (error) {
-                    // Propagate Firebase auth errors to be handled in the component
                     throw error;
                 }
             }
 
-            // Update display name if changed
             if (updates.firstName || updates.lastName) {
                 const displayName = `${updates.firstName} ${updates.lastName}`.trim();
                 await updateProfile(user, { displayName });
             }
 
-            // Update user data in Firestore
             const userDocRef = doc(firestore, "users", user.email);
             await updateDoc(userDocRef, {
                 firstName: updates.firstName || firstName,
@@ -175,7 +167,6 @@ export const StoreProvider = ({ children }) => {
 
             return true;
         } catch (error) {
-            // Propagate error to component for handling
             throw error;
         }
     };
@@ -185,7 +176,7 @@ export const StoreProvider = ({ children }) => {
             try {
                 setAuthLoading(true);
                 
-                // Clear existing data first
+                setUser(null);
                 clearCart();
                 setSelectedGenres([]);
                 setPurchaseHistory([]);
@@ -193,7 +184,6 @@ export const StoreProvider = ({ children }) => {
                 setLastName('');
 
                 if (firebaseUser) {
-                    // Only set user data if we have a valid Firebase user
                     const userDocRef = doc(firestore, "users", firebaseUser.email);
                     const userDoc = await getDoc(userDocRef);
                     const userData = userDoc.data();
@@ -208,13 +198,9 @@ export const StoreProvider = ({ children }) => {
                         const savedCart = loadCartFromStorage(firebaseUser.email, userData.purchases || []);
                         setCart(savedCart);
                     }
-                } else {
-                    // If no Firebase user, ensure user is null
-                    setUser(null);
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
-                // Clear all data on error
                 setUser(null);
                 clearCart();
                 setSelectedGenres([]);
@@ -233,23 +219,19 @@ export const StoreProvider = ({ children }) => {
     }, []);
 
     const contextValue = {
-        // Auth
         user,
         setUser,
         authLoading,
         
-        // User Profile
         firstName,
         setFirstName,
         lastName,
         setLastName,
         updateUserProfile,
         
-        // Genres
         selectedGenres,
         setSelectedGenres,
         
-        // Shopping
         cart,
         updateCart,
         handleCheckout,

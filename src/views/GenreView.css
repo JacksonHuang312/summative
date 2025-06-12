@@ -35,38 +35,37 @@
     padding: 1rem;
     max-width: 90vw;
     margin: 0 auto;
-  }
+}
   
-  .genre-view-item {
+.genre-view-item {
     background-color: #1a1a1a;
     border-radius: 10px;
     padding: 10px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
-    width: calc(25% - 1rem); /* Changed from 20% to 25% for wider items */
-  }
+    width: calc(25% - 1rem);
+}
   
-  .genre-view-image {
+.genre-view-image {
     width: 100%;
-    aspect-ratio: 2/3; /* This maintains movie poster proportions */
+    aspect-ratio: 2/3;
     object-fit: cover;
     border-radius: 8px;
-  }
+}
   
-  @media (max-width: 1200px) {
+@media (max-width: 1200px) {
     .genre-view-item {
       width: calc(33.33% - 1rem);
     }
-  }
+}
   
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
     .genre-view-item {
       width: calc(50% - 1rem);
     }
-  }
+}
 
-
- .genre-view-pagination-container {
+.genre-view-pagination-container {
     display: flex;
     justify-content: center;
     gap: 20px;
