@@ -20,7 +20,6 @@ function MovieView() {
         "Comedy": 35
     };
 
-    // Convert selected genre names to objects with id and genre
     const selectedGenreObjects = selectedGenres.map(genreName => ({
         genre: genreName,
         id: genreIds[genreName]

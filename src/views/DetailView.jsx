@@ -23,7 +23,6 @@ function DetailView() {
 
     return (
         <>
-            <Header />
             <div className="movie-detail">
                 <div className="movie-content">
                     <div className="movie-info">
