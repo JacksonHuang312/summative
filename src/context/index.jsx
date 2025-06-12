@@ -5,7 +5,8 @@ import {
     onAuthStateChanged,
     updateProfile,
     EmailAuthProvider,
-    updatePassword
+    updatePassword,
+    reauthenticateWithCredential
 } from 'firebase/auth';
 import {
     doc,
@@ -134,24 +135,33 @@ export const StoreProvider = ({ children }) => {
     };
 
     const updateUserProfile = async (updates) => {
-        if (!user) return;
+        if (!user) return false;
 
         try {
             if (updates.newPassword && updates.currentPassword) {
-                // Reauthenticate user before password change
-                const credential = EmailAuthProvider.credential(
-                    user.email,
-                    updates.currentPassword
-                );
-                await user.reauthenticateWithCredential(credential);
-                await updatePassword(user, updates.newPassword);
+                try {
+                    // Create credentials with current password
+                    const credential = EmailAuthProvider.credential(
+                        user.email,
+                        updates.currentPassword
+                    );
+                    // Reauthenticate user using the imported function
+                    await reauthenticateWithCredential(user, credential);
+                    // Update password
+                    await updatePassword(user, updates.newPassword);
+                } catch (error) {
+                    // Propagate Firebase auth errors to be handled in the component
+                    throw error;
+                }
             }
 
+            // Update display name if changed
             if (updates.firstName || updates.lastName) {
                 const displayName = `${updates.firstName} ${updates.lastName}`.trim();
                 await updateProfile(user, { displayName });
             }
 
+            // Update user data in Firestore
             const userDocRef = doc(firestore, "users", user.email);
             await updateDoc(userDocRef, {
                 firstName: updates.firstName || firstName,
@@ -165,15 +175,17 @@ export const StoreProvider = ({ children }) => {
 
             return true;
         } catch (error) {
-            console.error("Error updating profile:", error);
-            return false;
+            // Propagate error to component for handling
+            throw error;
         }
     };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             try {
-                // Clear existing cart and user data first
+                setAuthLoading(true);
+                
+                // Clear existing data first
                 clearCart();
                 setSelectedGenres([]);
                 setPurchaseHistory([]);
@@ -181,46 +193,34 @@ export const StoreProvider = ({ children }) => {
                 setLastName('');
 
                 if (firebaseUser) {
+                    // Only set user data if we have a valid Firebase user
                     const userDocRef = doc(firestore, "users", firebaseUser.email);
                     const userDoc = await getDoc(userDocRef);
                     const userData = userDoc.data();
 
                     if (userData) {
-                        // Existing user
                         setUser(firebaseUser);
                         setFirstName(userData.firstName || '');
                         setLastName(userData.lastName || '');
                         setSelectedGenres(userData.genres || []);
                         setPurchaseHistory(userData.purchases || []);
 
-                        // Load user's cart from localStorage with purchase history check
                         const savedCart = loadCartFromStorage(firebaseUser.email, userData.purchases || []);
                         setCart(savedCart);
-                    } else {
-                        // New user - create initial user data
-                        setUser(firebaseUser);
-                        const initialUserData = {
-                            email: firebaseUser.email,
-                            firstName: '',
-                            lastName: '',
-                            genres: [],
-                            purchases: []
-                        };
-                        await setDoc(userDocRef, initialUserData);
-                        
-                        // Set initial state
-                        setFirstName('');
-                        setLastName('');
-                        setSelectedGenres([]);
-                        setPurchaseHistory([]);
-                        setCart(Map());
                     }
                 } else {
+                    // If no Firebase user, ensure user is null
                     setUser(null);
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
+                // Clear all data on error
                 setUser(null);
+                clearCart();
+                setSelectedGenres([]);
+                setPurchaseHistory([]);
+                setFirstName('');
+                setLastName('');
             } finally {
                 setAuthLoading(false);
             }

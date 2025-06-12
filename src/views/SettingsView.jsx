@@ -67,11 +67,12 @@ function Settings() {
 
     const showMessage = (text, type = 'success') => {
         setMessage({ text, type });
-        setTimeout(() => setMessage({ text: '', type: '' }), 5000);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Clear any existing messages when submitting
+        setMessage({ text: '', type: '' });
 
         if (selectedGenresList.length < 5) {
             showMessage("Please select at least 5 genres.", "error");
@@ -81,6 +82,10 @@ function Settings() {
         if (newPassword) {
             if (!currentPassword) {
                 showMessage("Please enter your current password.", "error");
+                return;
+            }
+            if (newPassword.length < 6) {
+                showMessage("New password must be at least 6 characters long.", "error");
                 return;
             }
             if (newPassword !== confirmPassword) {
@@ -103,14 +108,24 @@ function Settings() {
             }
         }
 
-        const success = await updateUserProfile(updates);
-        if (success) {
-            showMessage("Settings updated successfully!");
-            setNewPassword('');
-            setConfirmPassword('');
-            setCurrentPassword('');
-        } else {
-            showMessage("Error updating settings. Please try again.", "error");
+        try {
+            const success = await updateUserProfile(updates);
+            if (success) {
+                showMessage("Settings updated successfully!");
+                setNewPassword('');
+                setConfirmPassword('');
+                setCurrentPassword('');
+            }
+        } catch (error) {
+            if (error.code === 'auth/wrong-password') {
+                showMessage("Current password is incorrect.", "error");
+            } else if (error.code === 'auth/requires-recent-login') {
+                showMessage("Please log out and log back in before changing your password.", "error");
+            } else if (error.code === 'auth/weak-password') {
+                showMessage("Password should be at least 6 characters long.", "error");
+            } else {
+                showMessage(error.message || "Error updating settings. Please try again.", "error");
+            }
         }
     };
 

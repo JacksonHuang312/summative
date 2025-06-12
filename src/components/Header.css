@@ -61,7 +61,6 @@
     border-color: #666666;
   }
   
-  /* Special styling for Cart button with items */
   .header-button:has(span) {
     background-color: #ff0000;
     border-color: #ff0000;

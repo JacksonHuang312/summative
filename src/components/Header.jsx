@@ -26,19 +26,19 @@ function Header() {
 
   const handleLogout = async () => {
     try {
-      // Clear user data first
+      await signOut(auth);
+      
       setUser(null);
       setSelectedGenres([]);
       setCart(new Map());
       
-      // Remove cart from localStorage with email-based key
-      if (auth.currentUser?.email) {
-        localStorage.removeItem(`cart-${auth.currentUser.email}`);
-      }
+      localStorage.clear();
+      const databases = await window.indexedDB.databases();
+      databases.forEach(db => {
+        window.indexedDB.deleteDatabase(db.name);
+      });
       
-      // Then sign out
-      await signOut(auth);
-      navigate('/');
+      navigate('/login');
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -56,20 +56,31 @@ function Header() {
     navigate('/movies/search');
   };
 
+  if (authLoading) {
+    return (
+      <header className="header">
+        <h1 className="title" onClick={() => navigate('/')}>Fentstreams</h1>
+        <div className="header-content">
+          <div className="buttons">
+            <button className="header-button" disabled>Loading...</button>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="header">
       <h1 className="title" onClick={handleHome}>Fentstreams</h1>
-        <div className="header-content">
-        {!authLoading && user && (
-          <>
-            <div className="welcome-message">
-              Hello {firstName || 'there'}!
-            </div>
-          </>
+      <div className="header-content">
+        {user && (
+          <div className="welcome-message">
+            Hello {firstName || 'there'}!
+          </div>
         )}
 
         <div className="buttons">
-          {!authLoading && (user ? (
+          {user ? (
             <>
               <button className="header-button" onClick={handleSearch}>Search</button>
               <button className="header-button" onClick={handleCart}>
@@ -83,7 +94,7 @@ function Header() {
               <button className="header-button" onClick={handleLogin}>Login</button>
               <button className="header-button" onClick={handleRegister}>Register</button>
             </>
-          ))}
+          )}
         </div>
       </div>
     </header>

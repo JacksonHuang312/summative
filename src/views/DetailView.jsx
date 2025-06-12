@@ -57,7 +57,7 @@ function DetailView() {
                     </div>
                 </div>
             </div>
-            <Footer />
+            
         </>
     );
 }
